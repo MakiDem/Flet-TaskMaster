@@ -8,17 +8,14 @@ def create_sidebar():
     return ft.Container(
         width=280,
         bgcolor="#ffffff",
-        padding=ft.padding.only(left=20, right=20, top=30, bottom=30),
+        padding=ft.padding.only(left=20, right=60, top=30, bottom=30),
         content=ft.Column([
             # Logo
             ft.Row([
-                ft.Container(
+                ft.Image(
                     width=50,
                     height=50,
-                    image = "../assets/logo.png",
-                    border_radius=25,
-                    content=ft.Icon("check", color="#ffffff", size=30),
-                    alignment=ft.alignment.center
+                    src = "assets/logo.png"
                 ),
                 ft.Text("TaskMaster", size=24, weight=ft.FontWeight.BOLD, color="#1f2937")
             ], spacing=15),
@@ -34,7 +31,8 @@ def create_sidebar():
             ),
             ft.Container(
                 content=ft.Text("All Tasks", size=14, color="#6b7280"),
-                padding=15
+                padding=15,
+                border_radius=8
             ),
             
             ft.Container(height=20),

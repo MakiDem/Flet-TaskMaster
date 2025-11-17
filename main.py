@@ -4,6 +4,7 @@ from components.sidebar import create_sidebar
 from pages.dashboard import create_dashboard_page
 from pages.all_tasks import create_all_tasks_page_content
 from dialogs.add_task_dialog import show_add_task_dialog
+from components.notification import NotificationManager
 
 
 def main(page: ft.Page):
@@ -14,11 +15,8 @@ def main(page: ft.Page):
     page.padding = 30
     page.bgcolor = "#f5f5f5"
 
-    page.snack_bar = ft.SnackBar(
-        content=ft.Text(""),
-        bgcolor="#22c55e",
-        duration=3000
-    )
+    # Initialize notification manager
+    notif_manager = NotificationManager(page)
 
     # Task data
     all_tasks_data = [
@@ -46,76 +44,73 @@ def main(page: ft.Page):
     # Current page state
     current_page = ["dashboard"]
     
-    # Flag to track if task was just added
-    task_just_added = [False]
-    
     # References
     main_content_ref = ft.Ref[ft.Container]()
     sidebar_container = ft.Ref[ft.Container]()
     
-    # Navigation handler - DEFINE THIS FIRST
+    # Check for overdue tasks on startup
+    def check_overdue_tasks():
+        overdue = [task for task in all_tasks_data if task["status"] == "overdue"]
+        if overdue:
+            notif_manager.show(
+                f"You have {len(overdue)} overdue task(s)!",
+                notification_type="warning",
+                duration=5
+            )
+    
+    # Navigation handler
     def navigate_to(page_name):
         """Handle navigation between pages"""
-        print(f"Navigating to: {page_name}")
         current_page[0] = page_name
         
-        # Update main content based on selected page
+        # Determine page content
         if page_name == "dashboard":
-            main_content_ref.current.content = create_dashboard_page(
+            page_content = create_dashboard_page(
                 completed_tasks, pending_tasks, overdue_tasks, 
                 completed_today, total_tasks, tasks_list
             )
+            check_overdue_tasks()
         elif page_name == "all_tasks":
-            # Pass the dialog opener and task data
-            main_content_ref.current.content = create_all_tasks_page_content(
+            page_content = create_all_tasks_page_content(
                 page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added)
             )
         
-        # Update sidebar to show active state
+        # Update main content - NO notification container needed
+        main_content_ref.current.content = page_content
+        
+        # Update sidebar
         sidebar_container.current.content = create_sidebar(
             page, navigate_to, page_name, handle_add_task
         ).content
         
-        
-        
-        # Show snackbar AFTER page.update() if task was just added
-        if task_just_added[0] and page_name == "all_tasks":
-            task_just_added[0] = False  # Reset flag
-            page.snack_bar.content = ft.Text("✅ Task added successfully!")
-            page.snack_bar.open = True
-            page.update()
-        
         page.update()
-
     
-    # Callback when task is added - DEFINE AFTER navigate_to
+    # Callback when task is added
     def on_task_added(new_task):
         """Called when a new task is added from the dialog"""
-        print(f"Task added: {new_task}")
-        
         # Add task to list
         new_task["id"] = len(all_tasks_data) + 1
         new_task["date"] = new_task.get("due_date", datetime.today().strftime("%b %d"))
         all_tasks_data.append(new_task)
         
-        # Set flag
-        task_just_added[0] = True
-        
         # Refresh the all tasks page
         if current_page[0] == "all_tasks":
             navigate_to("all_tasks")
-    
-    # Handle add task button click - DEFINE AFTER on_task_added
-    def handle_add_task(e):
-        print("Add task button clicked!")
         
+        # Show success notification
+        notif_manager.show(
+            "Task added successfully!",
+            notification_type="success",
+            duration=3
+        )
+    
+    # Handle add task button click
+    def handle_add_task(e):
         # Navigate to all tasks if not there
         if current_page[0] != "all_tasks":
-            print("Navigating to all tasks...")
             navigate_to("all_tasks")
         
         # Open the dialog
-        print("Opening dialog...")
         show_add_task_dialog(page, on_task_added)
     
     # Create sidebar
@@ -136,10 +131,12 @@ def main(page: ft.Page):
         padding=25,
         border_radius=15,
     )
-
     # Layout
     page.add(
         ft.Row([sidebar, main_content], spacing=0, expand=True)
     )
+    
+    # Check overdue tasks on startup
+    check_overdue_tasks()
 
 ft.app(target=main)

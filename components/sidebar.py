@@ -3,13 +3,15 @@ from components.calendar import create_calendar
 from components.time import create_time
 from components.add_btn import create_addbtn
 
-def create_sidebar(page: ft.Page, on_navigate, current_page="dashboard"):
+def create_sidebar(page, on_navigate, current_page, on_add_task):
     """
     Create sidebar with navigation
     
     Args:
+        page: Flet page object
         on_navigate: callback function to handle navigation
-        current_page: which page is currently active ("dashboard" or "all_tasks")
+        current_page: which page is currently active
+        on_add_task: callback function to handle add task button click
     """
     
     return ft.Container(
@@ -19,12 +21,15 @@ def create_sidebar(page: ft.Page, on_navigate, current_page="dashboard"):
         content=ft.Column([
             # Logo
             ft.Row([
-                ft.Image(
+                ft.Container(
                     width=50,
                     height=50,
-                    src="assets/logo.png"
+                    bgcolor="#6366f1",
+                    border_radius=25,
+                    content=ft.Icon("check", color="#ffffff", size=30),
+                    alignment=ft.alignment.center
                 ),
-                ft.Text("TaskMaster", size=24, weight=ft.FontWeight.BOLD, color="#2913D0")
+                ft.Text("TaskMaster", size=24, weight=ft.FontWeight.BOLD, color="#1f2937")
             ], spacing=15),
             
             ft.Container(height=30),
@@ -69,7 +74,7 @@ def create_sidebar(page: ft.Page, on_navigate, current_page="dashboard"):
             
             ft.Container(expand=True),
             
-            # Create add Button - Pass page object here
-            create_addbtn(page)
+            # Create add Button
+            create_addbtn(page, on_add_task)
         ])
     )

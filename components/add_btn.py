@@ -1,16 +1,13 @@
 import flet as ft
-from dialogs.add_task_dialog import show_add_task_dialog
 
-def create_addbtn(page):
+def create_addbtn(page, on_click_handler):
     """
     Create add task button
     
     Args:
         page: Flet page object
+        on_click_handler: Function to call when button is clicked
     """
-    def on_add_task_click(e):
-        show_add_task_dialog(page)  # Now page is the correct object
-    
     return ft.Container(
         content=ft.Row([
             ft.Icon("add", color="#ffffff", size=20),
@@ -19,6 +16,6 @@ def create_addbtn(page):
         bgcolor="#6366f1",
         padding=15,
         border_radius=8,
-        on_click=lambda e: on_add_task_click(e),
+        on_click=on_click_handler,
         ink=True
     )

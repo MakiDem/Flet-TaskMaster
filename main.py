@@ -66,7 +66,7 @@ def main(page: ft.Page):
             check_overdue_tasks(notif_manager, all_tasks_data)
         elif page_name == "all_tasks":
             page_content = create_all_tasks_page_content(
-                page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added)
+                page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added), notif_manager=notif_manager
             )
         
         # Update main content - NO notification container needed

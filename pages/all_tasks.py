@@ -1,15 +1,22 @@
 import flet as ft
-from components.tasks_frame.color import get_priority_color, get_status_color
-from components.tasks_frame.task import create_task_item, create_filter_handler
+from utils.all_tasks_handlers import create_task_handlers
+from utils.all_tasks_filters import create_filter_section
+from utils.all_tasks_list_view import create_task_list_view
+from utils.all_tasks_header import create_header
+from utils.all_tasks_search_bar import create_search_bar
 
-def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler):
+
+def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler, on_task_updated=None, on_task_deleted=None, notif_manager=None):
     """
     All Tasks page content
     
     Args:
         page: Flet page object
         all_tasks_data: List of all tasks
-        show_add_dialog_handler: Function to show add dialog (from main.py)
+        show_add_dialog_handler: Function to show add dialog
+        on_task_updated: Callback when task is updated
+        on_task_deleted: Callback when task is deleted
+        notif_manager: Notification manager for showing notifications
     """
     
     # Current filter state
@@ -19,120 +26,48 @@ def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler)
     task_list_ref = ft.Ref[ft.Column]()
     filter_buttons = {}
     
-    # Create filter buttons
-    all_btn = ft.Container(
-        content=ft.Text("All", size=13, color="#6366f1", weight=ft.FontWeight.W_500),
-        bgcolor="#e0e7ff",
-        padding=ft.padding.symmetric(horizontal=16, vertical=8),
-        border_radius=6,
-        ink=True
+    # Create handlers (passing all required references)
+    handle_edit_task, handle_delete_task, refresh_task_list = create_task_handlers(
+        page=page,
+        all_tasks_data=all_tasks_data,
+        task_list_ref=task_list_ref,
+        current_filter=current_filter,
+        notif_manager=notif_manager
     )
     
-    completed_btn = ft.Container(
-        content=ft.Text("Completed", size=13, color="#6b7280"),
-        bgcolor="#f3f4f6",
-        padding=ft.padding.symmetric(horizontal=16, vertical=8),
-        border_radius=6,
-        ink=True
+    # Create filter section
+    filter_row, filter_buttons = create_filter_section(
+        page=page,
+        all_tasks_data=all_tasks_data,
+        task_list_ref=task_list_ref,
+        current_filter=current_filter,
+        handle_edit_task=handle_edit_task,
+        handle_delete_task=handle_delete_task
     )
     
-    pending_btn = ft.Container(
-        content=ft.Text("Pending", size=13, color="#6b7280"),
-        bgcolor="#f3f4f6",
-        padding=ft.padding.symmetric(horizontal=16, vertical=8),
-        border_radius=6,
-        ink=True
+    # Create initial task list
+    initial_tasks = create_task_list_view(
+        task_list_ref=task_list_ref,
+        all_tasks_data=all_tasks_data,
+        page=page,
+        handle_edit_task=handle_edit_task,
+        handle_delete_task=handle_delete_task
     )
-    
-    overdue_btn = ft.Container(
-        content=ft.Text("Overdue", size=13, color="#6b7280"),
-        bgcolor="#f3f4f6",
-        padding=ft.padding.symmetric(horizontal=16, vertical=8),
-        border_radius=6,
-        ink=True
-    )
-    
-    # Store buttons in dictionary
-    filter_buttons = {
-        "all": all_btn,
-        "completed": completed_btn,
-        "pending": pending_btn,
-        "overdue": overdue_btn
-    }
-    
-    # Assign click handlers
-    all_btn.on_click = create_filter_handler(page, all_tasks_data, task_list_ref, current_filter, filter_buttons, "all")
-    completed_btn.on_click = create_filter_handler(page, all_tasks_data, task_list_ref, current_filter, filter_buttons, "completed")
-    pending_btn.on_click = create_filter_handler(page, all_tasks_data, task_list_ref, current_filter, filter_buttons, "pending")
-    overdue_btn.on_click = create_filter_handler(page, all_tasks_data, task_list_ref, current_filter, filter_buttons, "overdue")
-    
-    # Initial task list
-    initial_tasks = ft.Column(ref=task_list_ref, spacing=10, scroll="auto")
-    
-    # Populate initial tasks
-    initial_tasks.controls.append(
-        ft.Text(f"{len(all_tasks_data)} Tasks", size=14, color="#6b7280", weight=ft.FontWeight.W_500)
-    )
-    initial_tasks.controls.append(ft.Container(height=10))
-    for task in all_tasks_data:
-        initial_tasks.controls.append(create_task_item(task))
     
     # Return page content
     return ft.Column([
         # Header
-        ft.Row([
-            ft.Text("All Tasks", size=28, weight=ft.FontWeight.BOLD, color="#1f2937"),
-            ft.Container(expand=True),
-            ft.ElevatedButton(
-                "Add New Task",
-                icon="add",
-                bgcolor="#6366f1",
-                color="#ffffff",
-                on_click=show_add_dialog_handler  # Use the handler from main.py
-            )
-        ]),
+        create_header(show_add_dialog_handler),
         
         ft.Container(height=20),
         
         # Search and filter
-        ft.Row([
-            ft.Container(
-                content=ft.Row([
-                    ft.Icon("search", color="#9ca3af", size=18),
-                    ft.TextField(
-                        hint_text="Search tasks...",
-                        border=ft.InputBorder.NONE,
-                        text_size=14,
-                        expand=True
-                    )
-                ]),
-                bgcolor="#ffffff",
-                padding=ft.padding.symmetric(horizontal=15, vertical=8),
-                border_radius=8,
-                border=ft.border.all(1, "#e5e7eb"),
-                expand=True
-            ),
-            
-            ft.Container(
-                content=ft.Row([
-                    ft.Icon("filter_list", size=18, color="#6366f1"),
-                    ft.Text("Filter", size=14, color="#6366f1")
-                ], spacing=5),
-                bgcolor="#e0e7ff",
-                padding=ft.padding.symmetric(horizontal=15, vertical=10),
-                border_radius=8
-            )
-        ], spacing=10),
+        create_search_bar(),
         
         ft.Container(height=20),
         
         # Filter tabs
-        ft.Row([
-            all_btn,
-            completed_btn,
-            pending_btn,
-            overdue_btn,
-        ], spacing=8),
+        filter_row,
         
         ft.Container(height=20),
         

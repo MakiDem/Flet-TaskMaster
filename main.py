@@ -4,6 +4,8 @@ from components.sidebar import create_sidebar
 from pages.dashboard import create_dashboard_page
 from pages.all_tasks import create_all_tasks_page_content
 from dialogs.add_task_dialog import show_add_task_dialog
+from utils.check_overdue import check_overdue_tasks
+
 from components.notification import NotificationManager
 
 
@@ -48,15 +50,7 @@ def main(page: ft.Page):
     main_content_ref = ft.Ref[ft.Container]()
     sidebar_container = ft.Ref[ft.Container]()
     
-    # Check for overdue tasks on startup
-    def check_overdue_tasks():
-        overdue = [task for task in all_tasks_data if task["status"] == "overdue"]
-        if overdue:
-            notif_manager.show(
-                f"You have {len(overdue)} overdue task(s)!",
-                notification_type="warning",
-                duration=5
-            )
+    
     
     # Navigation handler
     def navigate_to(page_name):
@@ -69,7 +63,7 @@ def main(page: ft.Page):
                 completed_tasks, pending_tasks, overdue_tasks, 
                 completed_today, total_tasks, tasks_list
             )
-            check_overdue_tasks()
+            check_overdue_tasks(notif_manager, all_tasks_data)
         elif page_name == "all_tasks":
             page_content = create_all_tasks_page_content(
                 page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added)
@@ -90,7 +84,10 @@ def main(page: ft.Page):
         """Called when a new task is added from the dialog"""
         # Add task to list
         new_task["id"] = len(all_tasks_data) + 1
-        new_task["date"] = new_task.get("due_date", datetime.today().strftime("%b %d"))
+        if new_task.get("date") is None or new_task.get("date") == "":
+            new_task["date"] = datetime.today().strftime("%b %d")
+        else:
+            new_task["date"] = new_task.get("due_date", datetime.today().strftime("%b %d"))
         all_tasks_data.append(new_task)
         
         # Refresh the all tasks page
@@ -137,6 +134,6 @@ def main(page: ft.Page):
     )
     
     # Check overdue tasks on startup
-    check_overdue_tasks()
+    check_overdue_tasks(notif_manager, all_tasks_data)
 
 ft.app(target=main)

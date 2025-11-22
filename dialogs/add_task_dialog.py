@@ -40,11 +40,10 @@ def show_add_task_dialog(page, on_task_added=None):
                 except Exception:
                     pass
 
-            # Call callback AFTER closing dialog. The main application will
-            # handle showing the SnackBar (avoids reassigning page.snack_bar
-            # from inside the dialog which can cause timing/conflicts).
+            
             if on_task_added:
                 on_task_added(new_task)
+            page.update()
         
         def cancel(e):
             """Close dialog without saving"""
@@ -115,7 +114,7 @@ def show_add_task_dialog(page, on_task_added=None):
             modal=True,
             title=ft.Row([
                 ft.Icon("add_task", color="#6366f1", size=28),
-                ft.Text("Add New Task", size=20, weight=ft.FontWeight.BOLD, color="#1f2937")
+                ft.Text("Add New Task", size=20, weight=ft.FontWeight.BOLD, color="#cacaca")
             ], spacing=10),
             content=ft.Container(
                 content=ft.Column([

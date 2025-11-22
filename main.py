@@ -7,6 +7,7 @@ from dialogs.add_task_dialog import show_add_task_dialog
 from utils.check_overdue import check_overdue_tasks
 
 from components.notification import NotificationManager
+from database.crud import create_task, get_all_tasks
 
 
 def main(page: ft.Page):
@@ -21,15 +22,7 @@ def main(page: ft.Page):
     notif_manager = NotificationManager(page)
 
     # Task data
-    all_tasks_data = [
-        {"id": 1, "title": "Complete project proposal", "status": "completed", "priority": "high", "date": "Nov 16"},
-        {"id": 2, "title": "Review code changes", "status": "pending", "priority": "medium", "date": "Nov 17"},
-        {"id": 3, "title": "Update documentation", "status": "overdue", "priority": "low", "date": "Nov 15"},
-        {"id": 4, "title": "Team meeting at 3 PM", "status": "pending", "priority": "high", "date": "Nov 16"},
-        {"id": 5, "title": "Fix bug in login page", "status": "completed", "priority": "high", "date": "Nov 14"},
-        {"id": 6, "title": "Design new landing page", "status": "pending", "priority": "medium", "date": "Nov 18"},
-        {"id": 7, "title": "Write unit tests", "status": "overdue", "priority": "high", "date": "Nov 13"},
-    ]
+    all_tasks_data = get_all_tasks() 
 
     completed_tasks = 10
     pending_tasks = 10
@@ -85,10 +78,10 @@ def main(page: ft.Page):
         # Add task to list
         new_task["id"] = len(all_tasks_data) + 1
         if new_task.get("date") is None or new_task.get("date") == "":
-            new_task["date"] = datetime.today().strftime("%b %d")
+            new_task["date"] = datetime.today().strftime("%Y-%m-%d")
         else:
-            new_task["date"] = new_task.get("due_date", datetime.today().strftime("%b %d"))
-        all_tasks_data.append(new_task)
+            new_task["date"] = new_task.get("due_date", datetime.today().strftime("%Y-%m-%d"))
+        create_task(new_task)
         
         # Refresh the all tasks page
         if current_page[0] == "all_tasks":

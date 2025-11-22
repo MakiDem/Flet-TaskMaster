@@ -1,0 +1,202 @@
+import uuid
+from datetime import datetime
+from database.init_db import get_connection
+
+
+def _row_to_dict(row):
+    """Convert sqlite Row to dictionary."""
+    if row is None:
+        return None
+    return dict(row)
+
+
+def _rows_to_list(rows):
+    """Convert list of sqlite Rows to list of dictionaries."""
+    return [dict(row) for row in rows]
+
+
+# ============================================================
+# CREATE
+# ============================================================
+
+def create_task(task):
+    """
+    Create a new task.
+    
+    Returns:
+        dict: The created task
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    task_id = str(uuid.uuid4())
+    now = datetime.now().isoformat()
+    
+    cursor.execute('''
+        INSERT INTO tasks (id, title, description, status, priority, due_date, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (task_id, task.get("title"), task.get("description", ""), task.get("status", "pending"), task.get("priority", "medium"), task.get("due_date"), now, now))
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        "id": task_id,
+        "title": task.get("title"),
+        "description": task.get("description", ""),
+        "status": task.get("status", "pending"),
+        "priority": task.get("priority", "medium"),
+        "due_date": task.get("due_date"),
+        "created_at": now,
+        "updated_at": now
+    }
+
+
+# ============================================================
+# READ
+# ============================================================
+
+def get_all_tasks():
+    """
+    Get all tasks.
+    
+    Returns:
+        list: List of all tasks as dictionaries
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM tasks ORDER BY created_at DESC')
+    rows = cursor.fetchall()
+    
+    conn.close()
+    return _rows_to_list(rows)
+
+
+def get_task_by_id(task_id):
+    """
+    Get a single task by ID.
+    
+    Returns:
+        dict or None: Task dictionary or None if not found
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM tasks WHERE id = ?', (task_id,))
+    row = cursor.fetchone()
+    
+    conn.close()
+    return _row_to_dict(row)
+
+
+def get_tasks_by_status(status):
+    """
+    Get tasks filtered by status.
+    
+    Args:
+        status: 'pending', 'completed', or 'overdue'
+    
+    Returns:
+        list: Filtered tasks
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM tasks WHERE status = ? ORDER BY created_at DESC', (status,))
+    rows = cursor.fetchall()
+    
+    conn.close()
+    return _rows_to_list(rows)
+
+
+# ============================================================
+# UPDATE
+# ============================================================
+
+def update_task(task_id, **kwargs):
+    """
+    Update a task.
+    
+    Args:
+        task_id: ID of task to update
+        **kwargs: Fields to update (title, description, status, priority, due_date)
+    
+    Returns:
+        dict or None: Updated task or None if not found
+    """
+    allowed_fields = ['title', 'description', 'status', 'priority', 'due_date']
+    updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
+    
+    if not updates:
+        return get_task_by_id(task_id)
+    
+    updates['updated_at'] = datetime.now().isoformat()
+    
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    set_clause = ', '.join([f'{key} = ?' for key in updates.keys()])
+    values = list(updates.values()) + [task_id]
+    
+    cursor.execute(f'UPDATE tasks SET {set_clause} WHERE id = ?', values)
+    
+    conn.commit()
+    conn.close()
+    
+    return get_task_by_id(task_id)
+
+
+# ============================================================
+# DELETE
+# ============================================================
+
+def delete_task(task_id):
+    """
+    Delete a task.
+    
+    Args:
+        task_id: ID of task to delete
+    
+    Returns:
+        bool: True if deleted, False if not found
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('DELETE FROM tasks WHERE id = ?', (task_id,))
+    deleted = cursor.rowcount > 0
+    
+    conn.commit()
+    conn.close()
+    
+    return deleted
+
+
+# ============================================================
+# UTILITY
+# ============================================================
+
+def get_task_counts():
+    """
+    Get counts of tasks by status.
+    
+    Returns:
+        dict: {'total': int, 'pending': int, 'completed': int, 'overdue': int}
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT COUNT(*) as count FROM tasks')
+    total = cursor.fetchone()['count']
+    
+    cursor.execute('SELECT status, COUNT(*) as count FROM tasks GROUP BY status')
+    rows = cursor.fetchall()
+    
+    conn.close()
+    
+    counts = {'total': total, 'pending': 0, 'completed': 0, 'overdue': 0}
+    for row in rows:
+        counts[row['status']] = row['count']
+    
+    return counts

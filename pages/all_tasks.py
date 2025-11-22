@@ -5,6 +5,7 @@ from utils.all_tasks_list_view import create_task_list_view
 from utils.all_tasks_header import create_header
 from utils.all_tasks_search_bar import create_search_bar
 
+from database.crud import get_all_tasks
 
 def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler, on_task_updated=None, on_task_deleted=None, notif_manager=None):
     """
@@ -22,6 +23,10 @@ def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler,
     # Current filter state
     current_filter = ["all"]
     
+    
+    all_tasks_data.clear()
+    all_tasks_data.extend(get_all_tasks())
+
     # References
     task_list_ref = ft.Ref[ft.Column]()
     filter_buttons = {}

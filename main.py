@@ -7,7 +7,7 @@ from dialogs.add_task_dialog import show_add_task_dialog
 from utils.check_overdue import check_overdue_tasks
 
 from components.notification import NotificationManager
-from database.crud import create_task, get_all_tasks
+from database.crud import create_task, get_all_tasks, get_task_counts
 
 
 def main(page: ft.Page):
@@ -23,12 +23,13 @@ def main(page: ft.Page):
 
     # Task data
     all_tasks_data = get_all_tasks() 
-
-    completed_tasks = 10
-    pending_tasks = 10
-    overdue_tasks = 10
-    total_tasks = 11
-    completed_today = 9
+    task_status_counts = get_task_counts()
+    completed_tasks = task_status_counts.get("completed", 0)
+    pending_tasks = task_status_counts.get("pending", 0)
+    overdue_tasks = task_status_counts.get("overdue", 0)
+    total_tasks = task_status_counts.get("total", 0)
+    completed_today = task_status_counts.get("completed_today", 0)
+    
 
     tasks_list = [
         {"name": "Task", "completed": True},
@@ -52,12 +53,26 @@ def main(page: ft.Page):
         
         # Determine page content
         if page_name == "dashboard":
+            task_status_counts = get_task_counts()
+            completed_tasks = task_status_counts.get("completed", 0)
+            pending_tasks = task_status_counts.get("pending", 0)
+            overdue_tasks = task_status_counts.get("overdue", 0)
+            total_tasks = task_status_counts.get("total", 0)
+            completed_today = task_status_counts.get("completed_today", 0)
+
             page_content = create_dashboard_page(
                 completed_tasks, pending_tasks, overdue_tasks, 
                 completed_today, total_tasks, tasks_list
             )
             check_overdue_tasks(notif_manager, all_tasks_data)
         elif page_name == "all_tasks":
+            task_status_counts = get_task_counts()
+            completed_tasks = task_status_counts.get("completed", 0)
+            pending_tasks = task_status_counts.get("pending", 0)
+            overdue_tasks = task_status_counts.get("overdue", 0)
+            total_tasks = task_status_counts.get("total", 0)
+            completed_today = task_status_counts.get("completed_today", 0)
+
             page_content = create_all_tasks_page_content(
                 page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added), notif_manager=notif_manager
             )

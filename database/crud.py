@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from database.init_db import get_connection
 
 
@@ -46,7 +46,7 @@ def create_task(task):
         "description": task.get("description", ""),
         "status": task.get("status", "pending"),
         "priority": task.get("priority", "medium"),
-        "due_date": task.get("due_date"),
+        "due_date": task.get("due_date") if task.get("due_date") else (datetime.today() + timedelta(days=1)).strftime("%Y-%m-%d"),
         "category": task.get("category", "work"),
         "created_at": now,
         "updated_at": now

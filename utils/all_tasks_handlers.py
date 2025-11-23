@@ -1,6 +1,6 @@
 import flet as ft
 from components.tasks_frame.task import create_task_item
-from database.crud import get_all_tasks, update_task
+from database.crud import delete_task, get_all_tasks, update_task
 from dialogs.edit_task_dialog import show_edit_task_dialog
 
 
@@ -78,10 +78,7 @@ def create_task_handlers(page, all_tasks_data, task_list_ref, current_filter, no
             page.close(confirm_dialog)
             
             # Remove task from list
-            for i, t in enumerate(all_tasks_data):
-                if t["id"] == task_id:
-                    all_tasks_data.pop(i)
-                    break
+            delete_task(task_id)
             
             # Refresh display
             refresh_task_list()

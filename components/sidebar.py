@@ -70,7 +70,7 @@ def create_sidebar(page, on_navigate, current_page, on_add_task):
             ft.Container(height=20),
             
             # Time
-            create_time(),
+            create_time(page),
             
             ft.Container(expand=True),
             

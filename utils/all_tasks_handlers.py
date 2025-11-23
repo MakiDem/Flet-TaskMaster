@@ -1,5 +1,6 @@
 import flet as ft
 from components.tasks_frame.task import create_task_item
+from database.crud import get_all_tasks, update_task
 from dialogs.edit_task_dialog import show_edit_task_dialog
 
 
@@ -14,6 +15,8 @@ def create_task_handlers(page, all_tasks_data, task_list_ref, current_filter, no
     # Refresh task list
     def refresh_task_list():
         """Refresh the task list with current filter"""
+        all_tasks_data.clear()
+        all_tasks_data.extend(get_all_tasks())
         filter_type = current_filter[0]
         
         # Filter tasks
@@ -56,7 +59,7 @@ def create_task_handlers(page, all_tasks_data, task_list_ref, current_filter, no
             # Update task in list
             for i, t in enumerate(all_tasks_data):
                 if t["id"] == updated_task["id"]:
-                    all_tasks_data[i] = updated_task
+                    update_task(updated_task["id"], **updated_task)
                     break
             
             # Refresh display

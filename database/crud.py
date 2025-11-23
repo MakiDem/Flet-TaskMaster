@@ -33,9 +33,9 @@ def create_task(task):
     now = datetime.now().isoformat()
     
     cursor.execute('''
-        INSERT INTO tasks (id, title, description, status, priority, due_date, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (task_id, task.get("title"), task.get("description", ""), task.get("status", "pending"), task.get("priority", "medium"), task.get("due_date"), now, now))
+        INSERT INTO tasks (id, title, description, status, priority, due_date, category, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (task_id, task.get("title"), task.get("description", ""), task.get("status", "pending"), task.get("priority", "medium"), task.get("due_date"), task.get("category", "work"), now, now))
     
     conn.commit()
     conn.close()
@@ -47,6 +47,7 @@ def create_task(task):
         "status": task.get("status", "pending"),
         "priority": task.get("priority", "medium"),
         "due_date": task.get("due_date"),
+        "category": task.get("category", "work"),
         "created_at": now,
         "updated_at": now
     }
@@ -125,7 +126,10 @@ def update_task(task_id, **kwargs):
     Returns:
         dict or None: Updated task or None if not found
     """
-    allowed_fields = ['title', 'description', 'status', 'priority', 'due_date']
+    allowed_fields = [
+        'title', 'description', 'status', 'priority',
+        'due_date', 'category', 'date'
+    ]
     updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
     
     if not updates:

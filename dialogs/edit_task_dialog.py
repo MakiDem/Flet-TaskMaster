@@ -85,7 +85,6 @@ def show_edit_task_dialog(page, task, on_task_updated=None):
             "description": description_field.value.strip() if description_field.value else "",
             "priority": priority_dropdown.value,
             "status": status_dropdown.value,
-            "date": due_date_field.value.strip() if due_date_field.value else "",
             "due_date": due_date_field.value.strip() if due_date_field.value else "",
             "category": category_dropdown.value
         }
@@ -105,8 +104,8 @@ def show_edit_task_dialog(page, task, on_task_updated=None):
     dialog = ft.AlertDialog(
         modal=True,
         title=ft.Row([
-            ft.Icon("edit", color="#3b82f6", size=28),
-            ft.Text("Edit Task", size=20, weight=ft.FontWeight.BOLD, color="#1f2937")
+            ft.Icon("edit", color="#6098ff", size=28),
+            ft.Text("Edit Task", size=20, weight=ft.FontWeight.BOLD, color="#ffffff")
         ], spacing=10),
         content=ft.Container(
             content=ft.Column([

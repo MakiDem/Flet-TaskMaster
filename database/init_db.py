@@ -23,6 +23,7 @@ def init_database():
             description TEXT,
             status TEXT DEFAULT 'pending',
             priority TEXT DEFAULT 'medium',
+            category TEXT DEFAULT 'work',
             due_date DATE,
             created_at TEXT,
             updated_at TEXT

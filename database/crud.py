@@ -191,15 +191,19 @@ def get_task_counts():
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute('SELECT COUNT(*) as count FROM tasks')
+    cursor.execute('SELECT COUNT(*) as count FROM tasks WHERE due_date = date("now")')
     total = cursor.fetchone()['count']
+
+    today_completed = 0
+    cursor.execute('SELECT COUNT(*) as count FROM tasks WHERE due_date = date("now") AND status = "completed"')
+    today_completed = cursor.fetchone()['count']
     
     cursor.execute('SELECT status, COUNT(*) as count FROM tasks GROUP BY status')
     rows = cursor.fetchall()
     
     conn.close()
     
-    counts = {'total': total, 'pending': 0, 'completed': 0, 'overdue': 0}
+    counts = {'today_completed': today_completed, 'today_total': total, 'pending': 0, 'completed': 0, 'overdue': 0}
     for row in rows:
         counts[row['status']] = row['count']
     

@@ -27,8 +27,8 @@ def main(page: ft.Page):
     completed_tasks = task_status_counts.get("completed", 0)
     pending_tasks = task_status_counts.get("pending", 0)
     overdue_tasks = task_status_counts.get("overdue", 0)
-    total_tasks = task_status_counts.get("total", 0)
-    completed_today = task_status_counts.get("completed_today", 0)
+    total_tasks = task_status_counts.get("today_total", 0)
+    completed_today = task_status_counts.get("today_completed", 0)
     
 
     tasks_list = [
@@ -57,8 +57,8 @@ def main(page: ft.Page):
             completed_tasks = task_status_counts.get("completed", 0)
             pending_tasks = task_status_counts.get("pending", 0)
             overdue_tasks = task_status_counts.get("overdue", 0)
-            total_tasks = task_status_counts.get("total", 0)
-            completed_today = task_status_counts.get("completed_today", 0)
+            total_tasks = task_status_counts.get("today_total", 0)
+            completed_today = task_status_counts.get("today_completed", 0)
 
             page_content = create_dashboard_page(
                 completed_tasks, pending_tasks, overdue_tasks, 
@@ -70,8 +70,8 @@ def main(page: ft.Page):
             completed_tasks = task_status_counts.get("completed", 0)
             pending_tasks = task_status_counts.get("pending", 0)
             overdue_tasks = task_status_counts.get("overdue", 0)
-            total_tasks = task_status_counts.get("total", 0)
-            completed_today = task_status_counts.get("completed_today", 0)
+            total_tasks = task_status_counts.get("today_total", 0)
+            completed_today = task_status_counts.get("today_completed", 0)
 
             page_content = create_all_tasks_page_content(
                 page, all_tasks_data, lambda e: show_add_task_dialog(page, on_task_added), notif_manager=notif_manager

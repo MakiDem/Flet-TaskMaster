@@ -1,6 +1,14 @@
 import flet as ft
 
 def create_progress_circle(completed_today=0, total_tasks=1):
+    if total_tasks == 0:
+        
+        return ft.Container(
+            width=180,
+            height=180
+        )
+        
+    else:
         progress = completed_today / total_tasks
         
         return ft.Stack([

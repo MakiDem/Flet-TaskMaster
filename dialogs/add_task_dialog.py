@@ -1,3 +1,5 @@
+from datetime import timedelta
+import datetime
 import flet as ft
 
 def show_add_task_dialog(page, on_task_added=None):
@@ -26,7 +28,7 @@ def show_add_task_dialog(page, on_task_added=None):
                 "description": description_field.value.strip() if description_field.value else "",
                 "priority": priority_dropdown.value,
                 "status": status_dropdown.value,
-                "due_date": due_date_field.value.strip() if due_date_field.value else "",
+                "due_date": due_date_field.value.strip() if due_date_field.value else (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
                 "category": category_dropdown.value
             }
             

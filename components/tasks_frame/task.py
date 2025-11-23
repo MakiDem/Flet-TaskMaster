@@ -1,3 +1,4 @@
+import datetime
 import flet as ft
 from components.tasks_frame.color import get_priority_color, get_status_color
 
@@ -66,7 +67,7 @@ def create_task_item(task, page, on_edit_task=None, on_delete_task=None):
                 ft.Row([
                     ft.Text(f"Priority: {task['priority'].capitalize()}", size=11, color="#6b7280"),
                     ft.Text("•", size=11, color="#6b7280"),
-                    ft.Text(task.get("date", "No date"), size=11, color="#6b7280"),
+                    ft.Text(datetime.datetime.strptime(task.get("due_date"), "%Y-%m-%d").strftime("%B %d") if task.get("due_date") else "No due date", size=11, color="#6b7280"),
                 ], spacing=5)
             ], spacing=2, expand=True),
             

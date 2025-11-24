@@ -22,12 +22,19 @@ def create_time(page):
     
     def update_time():
         """Update the time display."""
+        # Wait for refs to be set
+        time.sleep(0.1)
+        
         while True:
             try:
-                now = datetime.now()
-                hour = now.hour
-                current_time = now.strftime("%I:%M")  # 12-hour format (01-12)
+                # Check if refs are valid
+                if time_text_ref.current is None:
+                    time.sleep(0.1)
+                    continue
                 
+                now = datetime.now()
+                current_time = now.strftime("%I:%M")  # 12-hour format (01-12)
+                hour = now.hour
                 
                 # Determine AM/PM
                 is_pm = hour >= 12
@@ -36,14 +43,14 @@ def create_time(page):
                 time_text_ref.current.value = current_time
                 
                 # Update AM/PM styling
-                if is_pm:
-                    # PM is active
+                if not is_pm:
+                    # AM is active
                     am_container_ref.current.bgcolor = "#ffffff"
                     am_container_ref.current.border = ft.border.all(1, "#e5e7eb")
                     pm_container_ref.current.bgcolor = "#f3f4f6"
                     pm_container_ref.current.border = None
                 else:
-                    # AM is active
+                    # PM is active
                     am_container_ref.current.bgcolor = "#f3f4f6"
                     am_container_ref.current.border = None
                     pm_container_ref.current.bgcolor = "#ffffff"
@@ -56,7 +63,7 @@ def create_time(page):
                 time.sleep(1)
             except Exception as e:
                 print(f"Time update error: {e}")
-                break
+                time.sleep(1)  # Continue even on error
     
     # Get initial values
     now = datetime.now()

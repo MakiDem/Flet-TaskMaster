@@ -208,3 +208,19 @@ def get_task_counts():
         counts[row['status']] = row['count']
     
     return counts
+
+def get_today_tasks():
+    """
+    Get tasks that are due today.
+    
+    Returns:
+        list: Tasks due today
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT * FROM tasks WHERE due_date = date("now") ORDER BY created_at DESC')
+    rows = cursor.fetchall()
+    
+    conn.close()
+    return _rows_to_list(rows)

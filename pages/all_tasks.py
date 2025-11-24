@@ -3,9 +3,8 @@ from utils.all_tasks_handlers import create_task_handlers
 from utils.all_tasks_filters import create_filter_section
 from utils.all_tasks_list_view import create_task_list_view
 from utils.all_tasks_header import create_header
-from utils.all_tasks_search_bar import create_search_bar
-
-from database.crud import get_all_tasks
+from components.searchbar import create_searchbar
+from database.crud import get_all_tasks, search_tasks
 
 def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler, on_task_updated=None, on_task_deleted=None, notif_manager=None):
     """
@@ -66,8 +65,14 @@ def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler,
         
         ft.Container(height=20),
         
-        # Search and filter
-        create_search_bar(),
+        # Search and filter (use shared searchbar component)
+        create_searchbar(
+            page=page,
+            all_tasks_data=all_tasks_data,
+            on_task_click=handle_edit_task,
+            show_add_dialog_handler=show_add_dialog_handler,
+            db_search_fn=search_tasks
+        ),
         
         ft.Container(height=20),
         

@@ -57,9 +57,15 @@ def create_task_handlers(page, all_tasks_data, task_list_ref, current_filter, no
         """Handle edit button click"""
         def on_updated(updated_task):
             # Update task in list
+            # Defensive: ensure payload is a dict and has 'id'
+            if not isinstance(updated_task, dict) or "id" not in updated_task:
+                print("all_tasks_handlers.on_updated received unexpected payload:", updated_task)
+                return
+
             for i, t in enumerate(all_tasks_data):
                 if t["id"] == updated_task["id"]:
-                    update_task(updated_task["id"], **updated_task)
+                    # Update DB record using allowed fields
+                    update_task(updated_task["id"], **{k: v for k, v in updated_task.items() if k != "id"})
                     break
             
             # Refresh display

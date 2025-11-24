@@ -61,8 +61,10 @@ def main(page: ft.Page):
             completed_today = task_status_counts.get("today_completed", 0)
 
             page_content = create_dashboard_page(
-                completed_tasks, pending_tasks, overdue_tasks, 
-                completed_today, total_tasks, tasks_list
+                page, completed_tasks, pending_tasks, overdue_tasks, 
+                completed_today, total_tasks, tasks_list,
+                notif_manager=notif_manager,
+                refresh_task_list=refresh_task_list
             )
             check_overdue_tasks(notif_manager, all_tasks_data)
         elif page_name == "all_tasks":
@@ -86,6 +88,20 @@ def main(page: ft.Page):
         ).content
         
         page.update()
+
+
+    def refresh_task_list():
+        """Reload tasks from the database into `all_tasks_data` and refresh the current view."""
+        try:
+            all_tasks_data.clear()
+            all_tasks_data.extend(get_all_tasks())
+        except Exception as e:
+            print("Error refreshing tasks from DB:", e)
+        # Re-render current page
+        try:
+            navigate_to(current_page[0])
+        except Exception:
+            pass
     
     # Callback when task is added
     def on_task_added(new_task):
@@ -129,8 +145,10 @@ def main(page: ft.Page):
         ref=main_content_ref,
         expand=True,
         content=create_dashboard_page(
-            completed_tasks, pending_tasks, overdue_tasks,
-            completed_today, total_tasks, tasks_list
+            page, completed_tasks, pending_tasks, overdue_tasks,
+            completed_today, total_tasks, tasks_list,
+            notif_manager=notif_manager,
+            refresh_task_list=refresh_task_list
         ),
         bgcolor="#f3f4f6",
         padding=25,

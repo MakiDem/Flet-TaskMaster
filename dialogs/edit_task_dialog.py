@@ -92,9 +92,15 @@ def show_edit_task_dialog(page, task, on_task_updated=None):
         # Close dialog
         page.close(dialog)
         
-        # Call callback if provided
+        # Call callback if provided (direct, with simple error logging).
         if on_task_updated:
-            on_task_updated(updated_task)
+            try:
+                on_task_updated(updated_task)
+            except Exception as e:
+                import traceback
+                print(f"ERROR in on_task_updated: {e}")
+                print("Updated task payload:", updated_task)
+                traceback.print_exc()
     
     def cancel(e):
         """Close dialog without saving"""

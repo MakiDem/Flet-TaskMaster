@@ -224,3 +224,34 @@ def get_today_tasks():
     
     conn.close()
     return _rows_to_list(rows)
+
+
+# ============================================================
+# SEARCH
+# ============================================================
+def search_tasks(query, limit=5):
+    """
+    Search tasks by title or description using a case-insensitive LIKE query.
+
+    Args:
+        query: search string
+        limit: maximum number of results
+
+    Returns:
+        list of task dicts
+    """
+    if not query:
+        return []
+
+    q = f"%{query.strip().lower()}%"
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        '''SELECT * FROM tasks WHERE LOWER(title) LIKE ? OR LOWER(description) LIKE ? ORDER BY created_at DESC LIMIT ?''',
+        (q, q, limit)
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    return _rows_to_list(rows)

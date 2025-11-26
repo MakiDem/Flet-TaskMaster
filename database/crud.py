@@ -219,7 +219,7 @@ def get_today_tasks():
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute('SELECT * FROM tasks WHERE due_date = date("now") ORDER BY created_at DESC')
+    cursor.execute('SELECT * FROM tasks WHERE due_date = date("now", "localtime") ORDER BY created_at DESC')
     rows = cursor.fetchall()
     
     conn.close()

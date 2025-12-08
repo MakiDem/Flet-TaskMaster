@@ -71,6 +71,7 @@ def get_all_tasks():
     rows = cursor.fetchall()
     
     conn.close()
+    update_overdue_tasks()
     return _rows_to_list(rows)
 
 
@@ -178,6 +179,73 @@ def delete_task(task_id):
 
 
 # ============================================================
+# AUTO-OVERDUE FUNCTIONALITY
+# ============================================================
+
+def update_overdue_tasks():
+    """
+    Automatically update pending tasks to overdue if due_date has passed.
+    
+    This function:
+    - Finds all tasks with status='pending'
+    - Checks if their due_date is before today
+    - Updates their status to 'overdue'
+    
+    Returns:
+        int: Number of tasks updated to overdue
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    today = datetime.now().date().isoformat()
+    
+    # Update all pending tasks where due_date is before today
+    cursor.execute('''
+        UPDATE tasks 
+        SET status = 'overdue', updated_at = ?
+        WHERE status = 'pending' 
+        AND due_date < ?
+        AND due_date IS NOT NULL
+    ''', (datetime.now().isoformat(), today))
+    
+    updated_count = cursor.rowcount
+    
+    conn.commit()
+    conn.close()
+    
+    return updated_count
+
+
+def get_all_tasks_with_auto_overdue():
+    """
+    Get all tasks and automatically update overdue status.
+    
+    This is a convenience function that:
+    1. Updates overdue tasks
+    2. Returns all tasks
+    
+    Returns:
+        list: List of all tasks as dictionaries
+    """
+    update_overdue_tasks()
+    return get_all_tasks()
+
+
+def get_tasks_by_status_with_auto_overdue(status):
+    """
+    Get tasks by status and automatically update overdue status.
+    
+    Args:
+        status: 'pending', 'completed', or 'overdue'
+    
+    Returns:
+        list: Filtered tasks
+    """
+    update_overdue_tasks()
+    return get_tasks_by_status(status)
+
+
+# ============================================================
 # UTILITY
 # ============================================================
 
@@ -188,6 +256,9 @@ def get_task_counts():
     Returns:
         dict: {'total': int, 'pending': int, 'completed': int, 'overdue': int}
     """
+    # Update overdue tasks before counting
+    update_overdue_tasks()
+    
     conn = get_connection()
     cursor = conn.cursor()
     

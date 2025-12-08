@@ -2,6 +2,31 @@ from datetime import timedelta
 import datetime
 import flet as ft
 
+def validate_date(date_string):
+    """
+    Simple date validation: checks format and ensures date is today or future
+    
+    Returns:
+        tuple: (is_valid: bool, error_message: str)
+    """
+    if not date_string or date_string.strip() == "":
+        return False, "Date is required"
+    
+    try:
+        # Parse the date
+        parsed_date = datetime.datetime.strptime(date_string.strip(), "%Y-%m-%d")
+        
+        # Check if date is today or in the future
+        today = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        if parsed_date < today:
+            return False, "Date must be today or in the future"
+        
+        return True, ""
+    
+    except ValueError:
+        return False, "Invalid date format. Use YYYY-MM-DD (e.g., 2024-12-31)"
+
+
 def show_add_task_dialog(page, on_task_added=None):
     """
     Show dialog to add new task
@@ -17,10 +42,27 @@ def show_add_task_dialog(page, on_task_added=None):
         def save_task(e):
             """Validate and save the task"""
             print("save_task called")
+            
+            # Reset error
+            error_text.value = ""
+            
+            # Validate title
             if not title_field.value or title_field.value.strip() == "":
                 error_text.value = "⚠️ Title is required!"
                 page.update()
                 return
+            
+            # Validate date
+            date_value = due_date_field.value.strip() if due_date_field.value else ""
+            if not date_value:
+                # Use tomorrow as default if empty
+                date_value = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+            else:
+                is_valid, error_msg = validate_date(date_value)
+                if not is_valid:
+                    error_text.value = f"⚠️ {error_msg}"
+                    page.update()
+                    return
             
             # Create task object
             new_task = {
@@ -28,7 +70,7 @@ def show_add_task_dialog(page, on_task_added=None):
                 "description": description_field.value.strip() if description_field.value else "",
                 "priority": priority_dropdown.value,
                 "status": status_dropdown.value,
-                "due_date": due_date_field.value.strip() if due_date_field.value else (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+                "due_date": date_value,
                 "category": category_dropdown.value
             }
             
@@ -91,9 +133,13 @@ def show_add_task_dialog(page, on_task_added=None):
             value="pending"
         )
         
+        # Set default to tomorrow
+        default_date = (datetime.datetime.now() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        
         due_date_field = ft.TextField(
             label="Due Date",
-            hint_text="YYYY-MM-DD",
+            hint_text="YYYY-MM-DD (e.g., 2024-12-31)",
+            value=default_date,
             width=500
         )
         
@@ -109,7 +155,7 @@ def show_add_task_dialog(page, on_task_added=None):
             value="work"
         )
         
-        error_text = ft.Text("", color="#ef4444", size=12)
+        error_text = ft.Text("", color="#ef4444", size=12, weight=ft.FontWeight.W_500)
         
         # Create dialog
         dialog = ft.AlertDialog(

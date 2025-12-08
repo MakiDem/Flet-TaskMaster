@@ -13,6 +13,17 @@ def create_task_item(task, page, on_edit_task=None, on_delete_task=None):
         on_delete_task: Callback function when delete is clicked (receives task_id)
     """
     
+    def format_due_date(due_date):
+        """Safely format due date with error handling"""
+        if not due_date:
+            return "No due date"
+        
+        try:
+            parsed_date = datetime.datetime.strptime(due_date, "%Y-%m-%d")
+            return parsed_date.strftime("%B %d")
+        except (ValueError, TypeError):
+            return "Invalid date"
+    
     def show_task_menu(e):
         """Show popup menu for task actions"""
         
@@ -67,7 +78,7 @@ def create_task_item(task, page, on_edit_task=None, on_delete_task=None):
                 ft.Row([
                     ft.Text(f"Priority: {task['priority'].capitalize()}", size=11, color="#6b7280"),
                     ft.Text("•", size=11, color="#6b7280"),
-                    ft.Text(datetime.datetime.strptime(task.get("due_date"), "%Y-%m-%d").strftime("%B %d") if task.get("due_date") else "No due date", size=11, color="#6b7280"),
+                    ft.Text(format_due_date(task.get("due_date")), size=11, color="#6b7280"),
                 ], spacing=5)
             ], spacing=2, expand=True),
             

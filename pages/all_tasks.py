@@ -83,4 +83,8 @@ def create_all_tasks_page_content(page, all_tasks_data, show_add_dialog_handler,
         
         # Task list
         initial_tasks
-    ], scroll="auto")
+    ], 
+        scroll="auto",
+        expand=True,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    )
